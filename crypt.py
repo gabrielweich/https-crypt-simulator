@@ -9,27 +9,43 @@ from Crypto.Cipher import AES
 import sys
 
 class AESCipher:
-
+    """
+    Inicializa a classe através da senha
+    """
     def __init__(self, key): 
         self.bs = AES.block_size
         self.key = bytes.fromhex(key)
 
 
+    """
+    Descriptografa um texto utilizando AES a partir da senha e do iv,
+    removendo o padding e decodificando os bytes em string
+    """
     def decrypt(self, text, iv):
         iv = bytes.fromhex(iv)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return self._unpad(cipher.decrypt(bytes.fromhex(text))).decode('utf-8')
 
+    """
+    Adiciona padding ao texto, gera um iv aleatório para criptografar
+    o texto com AES utilizando a senha.
+    Concatena o iv ao resultado e retorna em hexadecimal.
+    """
     def encrypt(self, text):
         text = self._pad(text)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return (iv + cipher.encrypt(text.encode())).hex()
         
-        
+    """
+    Adiciona padding na mensagem
+    """
     def _pad(self, s):
         return s + (self.bs - len(s) % self.bs) * chr(self.bs - len(s) % self.bs)
 
+    """
+    Remove padding da mensagem
+    """
     @staticmethod
     def _unpad(s):
         return s[:-ord(s[len(s)-1:])]
@@ -44,12 +60,12 @@ def main():
     iv, msg = (message[:32], message[32:])
     aes = AESCipher(password)
     dec = aes.decrypt(msg, iv)
-    print(dec)
+    print("Mensagem decifrada: ", dec, '\n')
     # Legal Gabriel. Agora inverte esta mensagem e me envia de volta cifrada
 
     dec = dec[::-1]
 
-    print(aes.encrypt(dec))
+    print("Mensagem cifrada: ", aes.encrypt(dec))
     # b997bdbce6a39599c5db0bb0fce6dcee6cc9675a19554612de38f08a8c1dc3e9e2b3cb72a6e38087f33c4ad2138b7d65d609df71247c510f463581194138d6cb980872cde63031bdbd1978c79727e92b8d343a10674829337d8e67a1e5c2d5dd
 
 if __name__ == "__main__":
